@@ -1,0 +1,64 @@
+name: LuminaUI
+version: 0.1.0
+main: dev.lumina.ui.LuminaPlugin
+api-version: '1.21'
+folia-supported: true
+authors: [ LuminaUI contributors ]
+description: Declarative display-entity UI runtime for Paper and Folia servers.
+website: https://github.com/EfraGamer300/LuminaUI
+softdepend:
+  - Geyser-Spigot
+  - floodgate
+
+commands:
+  lumina:
+    description: LuminaUI main command
+    usage: /lumina <help|list|open|close|create|delete|edit|reload|bedrock|debug>
+    aliases: [ lui, luminaui ]
+    permission: luminaui.command.use
+
+permissions:
+  luminaui.admin:
+    description: Full access to every LuminaUI command
+    default: op
+    children:
+      luminaui.command.use: true
+      luminaui.command.open: true
+      luminaui.command.close: true
+      luminaui.command.create: true
+      luminaui.command.delete: true
+      luminaui.command.edit: true
+      luminaui.command.list: true
+      luminaui.command.reload: true
+      luminaui.command.bedrock: true
+      luminaui.command.debug: true
+  luminaui.command.use:
+    description: Access to the /lumina command
+    default: op
+  luminaui.command.open:
+    description: Open pages with /lumina open
+    default: op
+  luminaui.command.close:
+    description: Close your open page with /lumina close
+    default: true
+  luminaui.command.create:
+    description: Create pages with /lumina create
+    default: op
+  luminaui.command.delete:
+    description: Delete pages with /lumina delete
+    default: op
+  luminaui.command.edit:
+    description: Open the page editor with /lumina edit
+    default: op
+  luminaui.command.list:
+    description: List pages with /lumina list
+    default: op
+  luminaui.command.reload:
+    description: Reload config and pages with /lumina reload
+    default: op
+  luminaui.command.bedrock:
+    description: Export pages to Bedrock with /lumina bedrock
+    default: op
+  luminaui.command.debug:
+    description: Read runtime counters with /lumina debug
+    default: op

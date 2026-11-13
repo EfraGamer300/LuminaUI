@@ -1,0 +1,52 @@
+# LuminaUI configuration
+#
+# The runtime draws pages on a virtual grid and projects that grid into the world.
+# Changing the viewport or the projection density changes every page at once, so
+# tune these values once and leave them alone afterwards.
+
+lang: en
+
+ui:
+  # Virtual page resolution in "pixels". A page authored at this size looks the
+  # same on every screen because the client billboards the elements.
+  viewport-width: 427
+  viewport-height: 240
+  # How many virtual pixels fit in one Minecraft block. Higher values make
+  # elements smaller for the same world distance.
+  pixels-per-block: 100
+  max-nodes-per-page: 500
+  # Frames are rebuilt this often (in ticks). Only changed elements are sent to
+  # clients, so a static page costs virtually nothing.
+  render-interval-ticks: 2
+
+editor:
+  autosave:
+    enabled: true
+    interval-seconds: 600
+  history:
+    undo-limit: 50
+  sounds:
+    enabled: true
+    volume: 1.0
+
+bedrock:
+  enabled: true
+  # Writes exported forms into the Geyser packs folder when it is configured.
+  auto-install-to-geyser: true
+  geyser-packs-folder: ''
+  pack:
+    name: LuminaUI
+  canvas:
+    width: 1920
+    height: 1080
+  player-head:
+    url-template: 'https://mc-heads.net/avatar/{id}/128'
+    enabled: true
+  player-skin:
+    url-template: 'https://mc-heads.net/body/{id}/256'
+
+resource-pack:
+  apply-on-join: false
+
+debug:
+  perf: false

@@ -1,0 +1,37 @@
+prefix: '<gradient:#7dd3fc:#a78bfa><bold>LuminaUI</bold></gradient> <dark_gray>»</dark_gray> '
+
+command:
+  players-only: '<red>Este comando só pode ser usado por jogadores.'
+  usage: '<yellow>Uso: <white>{usage}'
+  no-permission: '<red>Você não tem permissão ({permission}).'
+  failed: '<red>O comando falhou: <white>{error}'
+  invalid-number: '<red>"{value}" não é um número válido.'
+  help-header: '<gray>Comandos disponíveis:'
+
+page:
+  not-found: '<red>Não existe página chamada <white>{page}<red>.'
+  invalid-id: '<red>"{page}" não é um id válido. Use a-z, 0-9, hífen e underline.'
+  already-exists: '<red>Já existe uma página chamada <white>{page}<red>.'
+  created: '<green>Página <white>{page}<green> criada.'
+  save-failed: '<red>Não foi possível salvar a página <white>{page}<red>. Veja o console.'
+  delete-confirm: '<yellow>Use <white>/lumina delete {page} confirm<yellow> para apagar.'
+  deleted: '<green>Página <white>{page}<green> apagada.'
+  delete-failed: '<red>Não foi possível apagar a página <white>{page}<red>.'
+  opened: '<green>Página <white>{page}<green> aberta.'
+  closed: '<gray>Página fechada.'
+  none-open: '<yellow>Você não tem nenhuma página aberta.'
+  list-header: '<gray>Páginas:'
+  list-empty: '<gray>Nenhuma página ainda. Crie uma com <white>/lumina create <nome><gray>.'
+
+editor:
+  opened: '<green>Editando <white>{page}<green>. Use o menu para alterar os elementos.'
+  saved: '<green>Página <white>{page}<green> salva.'
+  not-on-bedrock: '<red>O editor no mundo não está disponível para clientes Bedrock.'
+
+bedrock:
+  disabled: '<red>O suporte a Bedrock está desativado no config.yml.'
+  built: '<green>Exportadas <white>{count}<green> página(s). Arquivos: <white>{files}'
+  export-failed: '<red>A exportação para Bedrock falhou: <white>{error}'
+
+plugin:
+  reloaded: '<green>Configuração e páginas recarregadas.'
