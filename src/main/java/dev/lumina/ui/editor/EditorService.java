@@ -23,7 +23,7 @@ public final class EditorService {
     private final UiRegistry registry;
     private final PageService pageService;
     private final YamlPageStore pageStore;
-    private final Settings settings;
+    private final java.util.function.Supplier<Settings> settings;
     private final Map<UUID, EditorSession> sessions = new ConcurrentHashMap<>();
     private final Map<UUID, String> pendingSaveKeys = new ConcurrentHashMap<>();
 
@@ -32,7 +32,7 @@ public final class EditorService {
             UiRegistry registry,
             PageService pageService,
             YamlPageStore pageStore,
-            Settings settings) {
+            java.util.function.Supplier<Settings> settings) {
         this.plugin = plugin;
         this.registry = registry;
         this.pageService = pageService;
@@ -49,7 +49,7 @@ public final class EditorService {
         if (existing != null) {
             flush(existing);
         }
-        EditorSession session = new EditorSession(playerId, page, settings.editorUndoLimit());
+        EditorSession session = new EditorSession(playerId, page, settings.get().editorUndoLimit());
         sessions.put(playerId, session);
         return session;
     }
@@ -62,14 +62,14 @@ public final class EditorService {
     public void markChanged(EditorSession session) {
         pageService.invalidatePage(session.pageId());
         registry.registerPage(session.page());
-        if (!settings.editorAutosave()) {
+        if (!settings.get().editorAutosave()) {
             return;
         }
         UUID playerId = session.playerId();
         pendingSaveKeys.put(playerId, "save:" + playerId);
         plugin.autoworker().schedule(
                 "save:" + playerId,
-                Math.max(1, settings.editorAutosaveSeconds() * 20L),
+                Math.max(1, settings.get().editorAutosaveSeconds() * 20L),
                 () -> flush(playerId));
     }
 

@@ -25,7 +25,7 @@ public final class ItemRenderer {
 
         float scale = projection.toScale(node.bounds());
         display.setTransformation(new org.bukkit.util.Transformation(
-                projection.toTranslation(node.bounds()),
+                new org.joml.Vector3f(0f, 0f, 0f),
                 new org.joml.Quaternionf(),
                 new org.joml.Vector3f(scale, scale, scale),
                 new org.joml.Quaternionf()));
@@ -41,7 +41,7 @@ public final class ItemRenderer {
         float scaleY = projection.toScale(node.bounds());
         float scaleX = projection.toScaleX(node.bounds());
         display.setTransformation(new org.bukkit.util.Transformation(
-                projection.toTranslation(node.bounds()),
+                new org.joml.Vector3f(0f, 0f, 0f),
                 new org.joml.Quaternionf(),
                 new org.joml.Vector3f(scaleX, scaleY, scaleY),
                 new org.joml.Quaternionf()));

@@ -38,11 +38,35 @@ public final class EditorMenu implements Listener {
     }
 
     public void open(Player player, EditorSession session) {
-        Inventory inventory = Bukkit.createInventory(null, SIZE,
-                MINI.deserialize("<dark_gray>Editing <white>" + session.pageId()));
+        MenuHolder holder = new MenuHolder(session.pageId());
+        Inventory inventory = Bukkit.createInventory(
+                holder, SIZE, MINI.deserialize("<dark_gray>Editing <white>" + session.pageId()));
+        holder.inventory = inventory;
         fillActions(inventory, session);
         fillNodes(inventory, session);
         player.openInventory(inventory);
+    }
+
+    /**
+     * Marks an inventory as belonging to this editor, so clicks are routed by identity instead of by
+     * matching the window title.
+     */
+    private static final class MenuHolder implements org.bukkit.inventory.InventoryHolder {
+        private final String pageId;
+        private Inventory inventory;
+
+        private MenuHolder(String pageId) {
+            this.pageId = pageId;
+        }
+
+        private String pageId() {
+            return pageId;
+        }
+
+        @Override
+        public Inventory getInventory() {
+            return inventory;
+        }
     }
 
     private void fillActions(Inventory inventory, EditorSession session) {
@@ -69,12 +93,7 @@ public final class EditorMenu implements Listener {
                 if (slot >= SIZE) {
                     return;
                 }
-                Material material = switch (node) {
-                    case UiNode.TextNode ignored -> Material.PAPER;
-                    case UiNode.ImageNode ignored -> Material.MAP;
-                    case UiNode.ShapeNode ignored -> Material.PRISMARINE_SHARD;
-                    case UiNode.GroupNode ignored -> Material.CHEST;
-                };
+                Material material = materialFor(node);
                 inventory.setItem(slot++, item(material, "<white>" + node.id(),
                         "<gray>layer: <white>" + layer.id(),
                         "<gray>type: <white>" + node.getClass().getSimpleName(),
@@ -84,17 +103,29 @@ public final class EditorMenu implements Listener {
         }
     }
 
+    private static Material materialFor(UiNode node) {
+        if (node instanceof UiNode.ImageNode) {
+            return Material.MAP;
+        }
+        if (node instanceof UiNode.ShapeNode) {
+            return Material.PRISMARINE_SHARD;
+        }
+        if (node instanceof UiNode.GroupNode) {
+            return Material.CHEST;
+        }
+        return Material.PAPER;
+    }
+
     @EventHandler
     public void onClick(InventoryClickEvent event) {
+        if (!(event.getInventory().getHolder() instanceof MenuHolder holder)) {
+            return;
+        }
         if (!(event.getWhoClicked() instanceof Player player)) {
             return;
         }
         EditorSession session = plugin.editorService().session(player.getUniqueId());
-        if (session == null) {
-            return;
-        }
-        Component title = event.getView().title();
-        if (!MINI.serialize(title).contains(session.pageId())) {
+        if (session == null || !session.pageId().equals(holder.pageId())) {
             return;
         }
         event.setCancelled(true);

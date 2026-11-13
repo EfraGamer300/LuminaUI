@@ -146,20 +146,7 @@ public final class EditorSession {
                     updated.add(node);
                     continue;
                 }
-                updated.add(switch (node) {
-                    case UiNode.TextNode text -> new UiNode.TextNode(
-                            text.id(), text.bounds(), anchor, text.style(), text.visible(),
-                            text.text(), text.scale(), text.lineWidth());
-                    case UiNode.ImageNode image -> new UiNode.ImageNode(
-                            image.id(), image.bounds(), anchor, image.style(), image.visible(),
-                            image.texture(), image.tint(), image.smooth());
-                    case UiNode.ShapeNode shape -> new UiNode.ShapeNode(
-                            shape.id(), shape.bounds(), anchor, shape.style(), shape.visible(),
-                            shape.material(), shape.cornerRadius());
-                    case UiNode.GroupNode group -> new UiNode.GroupNode(
-                            group.id(), group.bounds(), anchor, group.style(), group.visible(),
-                            group.children());
-                });
+                updated.add(withAnchor(node, anchor));
             }
             return updated;
         }));
@@ -248,6 +235,24 @@ public final class EditorSession {
             layers.add(layer.withNodes(operation.apply(layer.nodes())));
         }
         return page.withLayers(layers);
+    }
+
+    private static UiNode withAnchor(UiNode node, Anchor anchor) {
+        if (node instanceof UiNode.TextNode text) {
+            return new UiNode.TextNode(text.id(), text.bounds(), anchor, text.style(), text.visible(),
+                    text.text(), text.scale(), text.lineWidth());
+        }
+        if (node instanceof UiNode.ImageNode image) {
+            return new UiNode.ImageNode(image.id(), image.bounds(), anchor, image.style(),
+                    image.visible(), image.texture(), image.tint(), image.smooth());
+        }
+        if (node instanceof UiNode.ShapeNode shape) {
+            return new UiNode.ShapeNode(shape.id(), shape.bounds(), anchor, shape.style(),
+                    shape.visible(), shape.material(), shape.cornerRadius());
+        }
+        UiNode.GroupNode group = (UiNode.GroupNode) node;
+        return new UiNode.GroupNode(group.id(), group.bounds(), anchor, group.style(),
+                group.visible(), group.children());
     }
 
     private static int indexOfLayer(List<UiPage.Layer> layers, String layerId) {

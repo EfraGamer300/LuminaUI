@@ -123,23 +123,24 @@ public final class RenderSession implements AutoCloseable {
         if (node.node() instanceof UiNode.TextNode text) {
             TextDisplay display = pool.acquireText();
             textRenderer.apply(display, text, projection);
-            place(display, text.bounds());
+            place(display, node);
             live.put(key(node), display);
         } else if (node.node() instanceof UiNode.ShapeNode shape) {
             ItemDisplay display = pool.acquireItem();
             itemRenderer.apply(display, shape, projection);
-            place(display, shape.bounds());
+            place(display, node);
             live.put(key(node), display);
         } else if (node.node() instanceof UiNode.ImageNode image) {
             ItemDisplay display = pool.acquireItem();
             itemRenderer.apply(display, image, projection);
-            place(display, image.bounds());
+            place(display, node);
             live.put(key(node), display);
         }
     }
 
-    private void place(Display display, dev.lumina.ui.api.ElementBounds bounds) {
-        display.teleport(projection.toWorld(bounds.x(), bounds.y()));
+    private void place(Display display, ResolvedNode node) {
+        display.teleport(projection.toWorld(
+                node.x() + node.width() * 0.5f, node.y() + node.height() * 0.5f));
         if (viewer == null) {
             display.setVisibleByDefault(true);
         } else {
@@ -154,6 +155,8 @@ public final class RenderSession implements AutoCloseable {
             spawn(node);
             return;
         }
+        display.teleport(projection.toWorld(
+                node.x() + node.width() * 0.5f, node.y() + node.height() * 0.5f));
         if (display instanceof TextDisplay textDisplay && node.node() instanceof UiNode.TextNode text) {
             textRenderer.apply(textDisplay, text, projection);
         } else if (display instanceof ItemDisplay itemDisplay) {

@@ -44,7 +44,7 @@ public final class TextRenderer {
 
         float scale = node.scale() * projection.toScale(node.bounds());
         display.setTransformation(new org.bukkit.util.Transformation(
-                projection.toTranslation(node.bounds()),
+                new org.joml.Vector3f(0f, 0f, 0f),
                 new org.joml.Quaternionf(),
                 new org.joml.Vector3f(scale, scale, scale),
                 new org.joml.Quaternionf()));

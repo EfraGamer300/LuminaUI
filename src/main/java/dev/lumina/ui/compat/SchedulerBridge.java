@@ -72,6 +72,31 @@ public final class SchedulerBridge {
         }
     }
 
+    /**
+     * Repeats {@code task} on the thread that owns {@code player}, which is the only safe place to
+     * touch entities around them. Returns a handle whose {@link ScheduledTaskHandle#cancel()} stops
+     * the task, and invokes {@code onStop} when the player leaves.
+     */
+    public ScheduledTaskHandle repeatForPlayer(
+            org.bukkit.entity.Player player, long delayTicks, long periodTicks,
+            Runnable task, Runnable onStop) {
+        if (folia) {
+            io.papermc.paper.threadedregions.scheduler.ScheduledTask scheduled =
+                    player.getScheduler().runAtFixedRate(
+                            plugin, ignored -> task.run(), onStop, delayTicks, periodTicks);
+            return () -> scheduled.cancel();
+        }
+        org.bukkit.scheduler.BukkitTask bukkitTask =
+                Bukkit.getScheduler().runTaskTimer(plugin, task, delayTicks, periodTicks);
+        return bukkitTask::cancel;
+    }
+
+    /** Cancellable handle for a scheduled task. */
+    @FunctionalInterface
+    public interface ScheduledTaskHandle {
+        void cancel();
+    }
+
     /** Runs a task off the tick thread. */
     public void async(Runnable task) {
         if (folia) {

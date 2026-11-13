@@ -5,6 +5,7 @@ import dev.lumina.ui.api.UiEvent;
 import dev.lumina.ui.api.UiEventType;
 import dev.lumina.ui.api.UiPage;
 import dev.lumina.ui.core.LayoutEngine;
+import dev.lumina.ui.compat.SchedulerBridge;
 import dev.lumina.ui.core.Settings;
 import dev.lumina.ui.core.UiRegistry;
 import dev.lumina.ui.input.InteractionBinder;
@@ -12,7 +13,7 @@ import dev.lumina.ui.render.ItemRenderer;
 import dev.lumina.ui.render.PageProjection;
 import dev.lumina.ui.render.RenderSession;
 import dev.lumina.ui.render.TextRenderer;
-import io.papermc.paper.threadedregions.scheduler.ScheduledTask;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -37,6 +38,7 @@ public final class PageService implements Listener, AutoCloseable {
     private final LuminaPlugin plugin;
     private final UiRegistry registry;
     private final Settings settings;
+    private final SchedulerBridge scheduler;
     private final TextRenderer textRenderer;
     private final ItemRenderer itemRenderer;
     private final Map<UUID, Session> sessions = new ConcurrentHashMap<>();
@@ -45,11 +47,13 @@ public final class PageService implements Listener, AutoCloseable {
             LuminaPlugin plugin,
             UiRegistry registry,
             Settings settings,
+            SchedulerBridge scheduler,
             TextRenderer textRenderer,
             ItemRenderer itemRenderer) {
         this.plugin = plugin;
         this.registry = registry;
         this.settings = settings;
+        this.scheduler = scheduler;
         this.textRenderer = textRenderer;
         this.itemRenderer = itemRenderer;
     }
@@ -161,21 +165,15 @@ public final class PageService implements Listener, AutoCloseable {
             return;
         }
         long period = Math.max(1L, settings.renderIntervalTicks());
-        ScheduledTask task = player.getScheduler().runAtFixedRate(
-                plugin,
-                scheduled -> {
-                    Player online = Bukkit.getPlayer(playerId);
-                    if (online == null || !online.isOnline()) {
-                        close(playerId, false);
-                        return;
-                    }
-                    session.renderer.tick();
-                    session.binder.sync(session.renderer.lastFrame(), true);
-                },
-                () -> close(playerId, false),
-                1L,
-                period);
-        session.task = task;
+        session.task = scheduler.repeatForPlayer(player, 1L, period, () -> {
+            Player online = Bukkit.getPlayer(playerId);
+            if (online == null || !online.isOnline()) {
+                close(playerId, false);
+                return;
+            }
+            session.renderer.tick();
+            session.binder.sync(session.renderer.lastFrame(), true);
+        }, () -> close(playerId, false));
     }
 
     @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
@@ -183,18 +181,33 @@ public final class PageService implements Listener, AutoCloseable {
         if (!(event.getRightClicked() instanceof Interaction interaction)) {
             return;
         }
-        Session session = sessions.get(event.getPlayer().getUniqueId());
-        if (session == null) {
+        dispatchOnHitbox(event.getPlayer(), interaction, UiEventType.RIGHT_CLICK);
+        event.setCancelled(true);
+    }
+
+    @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
+    public void onAttackEntity(org.bukkit.event.entity.EntityDamageByEntityEvent event) {
+        if (!(event.getDamager() instanceof Player player)
+                || !(event.getEntity() instanceof Interaction interaction)) {
             return;
+        }
+        if (dispatchOnHitbox(player, interaction, UiEventType.LEFT_CLICK)) {
+            event.setCancelled(true);
+        }
+    }
+
+    private boolean dispatchOnHitbox(Player player, Interaction interaction, UiEventType type) {
+        Session session = sessions.get(player.getUniqueId());
+        if (session == null) {
+            return false;
         }
         String nodeKey = session.binder.nodeKeyOf(interaction.getEntityId());
         if (nodeKey == null) {
-            return;
+            return false;
         }
-        event.setCancelled(true);
         String nodeId = nodeKey.substring(nodeKey.indexOf('/') + 1);
-        registry.dispatch(UiEvent.click(
-                UiEventType.RIGHT_CLICK, session.page.id(), nodeId, event.getPlayer().getUniqueId()));
+        registry.dispatch(UiEvent.click(type, session.page.id(), nodeId, player.getUniqueId()));
+        return true;
     }
 
     @EventHandler
@@ -212,7 +225,7 @@ public final class PageService implements Listener, AutoCloseable {
         private final UiPage page;
         private final RenderSession renderer;
         private final InteractionBinder binder;
-        private ScheduledTask task;
+        private dev.lumina.ui.compat.SchedulerBridge.ScheduledTaskHandle task;
 
         private Session(UUID playerId, UiPage page, RenderSession renderer, InteractionBinder binder) {
             this.playerId = playerId;

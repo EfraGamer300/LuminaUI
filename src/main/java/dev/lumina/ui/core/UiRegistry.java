@@ -69,6 +69,11 @@ public final class UiRegistry implements LuminaApi {
         return pages.size();
     }
 
+    /** Drops every page definition. Listeners are kept, since they outlive a reload. */
+    public void clearPages() {
+        pages.clear();
+    }
+
     /** Dispatches an event to every listener registered for its page. */
     public void dispatch(UiEvent event) {
         CopyOnWriteArrayList<Consumer<UiEvent>> bucket = listeners.get(event.pageId());

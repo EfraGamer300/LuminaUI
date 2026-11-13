@@ -83,8 +83,7 @@ public final class InteractionBinder implements AutoCloseable {
     }
 
     private Interaction spawn(ResolvedNode node) {
-        Interaction interaction = projection.world().spawn(
-                projection.toWorld(node.x(), node.y()), Interaction.class);
+        Interaction interaction = projection.world().spawn(centre(node), Interaction.class);
         interaction.setResponsive(true);
         interaction.setVisibleByDefault(viewer != null);
         applyGeometry(interaction, node);
@@ -99,7 +98,15 @@ public final class InteractionBinder implements AutoCloseable {
         float height = Math.max(0.05f, node.height() / projection.pixelsPerBlock());
         interaction.setInteractionWidth(width);
         interaction.setInteractionHeight(height);
-        interaction.teleport(projection.toWorld(node.x(), node.y()));
+        interaction.teleport(centre(node));
+    }
+
+    /**
+     * Interaction hitboxes are centred on their entity position, while node bounds describe the
+     * top-left corner - so the hitbox has to be placed at the bounds centre to match the visual.
+     */
+    private org.bukkit.Location centre(ResolvedNode node) {
+        return projection.toWorld(node.x() + node.width() * 0.5f, node.y() + node.height() * 0.5f);
     }
 
     private static String keyOf(ResolvedNode node) {

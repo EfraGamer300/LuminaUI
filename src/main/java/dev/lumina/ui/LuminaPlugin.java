@@ -60,12 +60,13 @@ public final class LuminaPlugin extends JavaPlugin {
                 pagesDirectory(),
                 new PageValidator(settings.maxNodesPerPage()),
                 getLogger());
-        this.pageService = new PageService(this, registry, settings, textRenderer, itemRenderer);
+        this.pageService = new PageService(this, registry, settings, scheduler, textRenderer, itemRenderer);
         this.editorService = new dev.lumina.ui.editor.EditorService(
-                this, registry, pageService, pageStore, settings);
+                this, registry, pageService, pageStore, () -> settings);
         this.bedrockService = new dev.lumina.ui.bedrock.BedrockService(this, registry, settings);
         this.editorMenu = new dev.lumina.ui.editor.EditorMenu(this);
 
+        installDefaultPages();
         loadPages();
         registerCommands();
         registerListeners();
@@ -92,6 +93,7 @@ public final class LuminaPlugin extends JavaPlugin {
     public void reloadEverything() {
         reloadConfig();
         this.settings = Settings.from(getConfig());
+        registry.clearPages();
         loadPages();
         pageService.closeMissingPages();
     }
@@ -102,6 +104,18 @@ public final class LuminaPlugin extends JavaPlugin {
             registry.registerPage(page);
         }
         getLogger().info(() -> "Loaded " + pages.size() + " page(s)");
+    }
+
+    /** Copies the bundled example page into the data folder on first run. */
+    private void installDefaultPages() {
+        if (java.nio.file.Files.isRegularFile(pagesDirectory().resolve("example.yml"))) {
+            return;
+        }
+        try {
+            saveResource("pages/example.yml", false);
+        } catch (RuntimeException failure) {
+            reportFailure("installing the example page", failure);
+        }
     }
 
     private void registerCommands() {
