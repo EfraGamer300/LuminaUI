@@ -1,0 +1,47 @@
+# Example script in the legacy .uui format.
+#
+# Drop this file in plugins/LuminaUI/contents/scripts/ and run
+#   /lumina script reload
+# to load it. Every handler receives the acting player when there is one.
+#
+# You can also wrap the whole file in a page:
+#   page "shop"
+# after which handlers without an explicit page apply to that page.
+
+page "example"
+
+let greeting = "Welcome"
+let price = 10
+
+function format_price(amount, qty):
+    return "${amount * qty} coins"
+
+# Fired when the page opens for a player.
+on open:
+    message "${greeting}, %player_name%!"
+    message actionbar "Price: ${price}"
+
+# Fired before the page closes.
+on close:
+    message "See you next time!"
+
+# Click on a specific element. Use the element id from the page file.
+on click "buy":
+    if price > 100:
+        message "Too expensive!"
+    else:
+        message "Bought for ${format_price(price, 2)}"
+        command "/give %player_name% diamond 1"
+
+# Hover and drag are available too:
+on hover "buy":
+    message actionbar "Click to buy"
+
+# A timer that runs every 5 seconds while the server is up.
+every 5 seconds:
+    log "example timer tick"
+
+# A command registered by the script itself.
+command /lumina_example permission "luminaui.example":
+    message "Script commands work!"
+    open "example"

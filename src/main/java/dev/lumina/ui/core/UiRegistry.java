@@ -20,6 +20,7 @@ public final class UiRegistry implements LuminaApi {
 
     private final Map<String, UiPage> pages = new ConcurrentHashMap<>();
     private final Map<String, CopyOnWriteArrayList<Consumer<UiEvent>>> listeners = new ConcurrentHashMap<>();
+    private final CopyOnWriteArrayList<Consumer<UiEvent>> anyListeners = new CopyOnWriteArrayList<>();
 
     @Override
     public UiPage page(String id) {
@@ -74,8 +75,20 @@ public final class UiRegistry implements LuminaApi {
         pages.clear();
     }
 
+    /** Subscribes to events of every page. Used by scripts, which are not bound to one page. */
+    public AutoCloseable onAny(Consumer<UiEvent> listener) {
+        if (listener == null) {
+            throw new IllegalArgumentException("listener must not be null");
+        }
+        anyListeners.add(listener);
+        return () -> anyListeners.remove(listener);
+    }
+
     /** Dispatches an event to every listener registered for its page. */
     public void dispatch(UiEvent event) {
+        for (Consumer<UiEvent> listener : anyListeners) {
+            listener.accept(event);
+        }
         CopyOnWriteArrayList<Consumer<UiEvent>> bucket = listeners.get(event.pageId());
         if (bucket == null) {
             return;

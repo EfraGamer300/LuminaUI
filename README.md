@@ -51,6 +51,51 @@ cache/  backups/
 Bundled locales live in the jar under `locales/`; only the selected one is written to `lang.yml`.
 Pages are read from `contents/pages/`.
 
+## Scripts
+
+Scripts live in `contents/scripts/`. The legacy `.uui` format is supported, so existing script files
+load as-is:
+
+```uui
+page "shop"
+
+on open:
+    message "Welcome, %player_name%!"
+
+on click "buy":
+    if balance > 10:
+        message "Bought!"
+        command "/give %player_name% diamond 1"
+    else:
+        message "Not enough coins"
+
+every 5 seconds:
+    log "tick"
+
+command /shop permission "shop.use":
+    open "shop"
+```
+
+Language surface:
+
+- **Declarations**: `page "id"`, `let`/`var`, `set` (with `+= -= *= /=`), `function`/`def`.
+- **Handlers**: `on <event> ["element"] [in "page"]`, `every <n> <ticks|seconds|minutes>`,
+  `command /name [permission "node"]`.
+- **Events**: `open`, `close`, `opening`, `click`, `left click`, `right click`, `hover`, `unhover`,
+  `drag`, `drop`, `scroll`, `key`, `input`, `load`, `join`, `quit`.
+- **Statements**: `if`/`elif`/`else`, `while`, `for x in y`, `repeat n times`, `wait <n> <unit>`,
+  `break`, `continue`, `return`.
+- **Values**: numbers, strings, booleans, `null`, lists, maps, `+ - * / %`, comparisons,
+  `and`/`or`/`not`, `in`, ternary `? :`, index `[n]`, property `.name`, function calls.
+- **Interpolation**: `${expr}` and `%placeholder%` inside strings.
+- **Verbs**: `message`, `message actionbar`, `title`, `command`, `open`, `close`, `sound`, `log`,
+  `cancel`.
+
+Commands: `/lumina script list|reload|formats|run <file> <index>`.
+
+`ScriptFormat` is the seam for the native format: a new implementation registers in `ScriptFormats`
+and the loader, dispatcher and interpreter stay unchanged.
+
 ## Quick start
 
 ```

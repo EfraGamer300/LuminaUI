@@ -36,6 +36,7 @@ public final class LuminaPlugin extends JavaPlugin {
     private dev.lumina.ui.editor.EditorService editorService;
     private dev.lumina.ui.editor.EditorMenu editorMenu;
     private dev.lumina.ui.bedrock.BedrockService bedrockService;
+    private dev.lumina.ui.script.ScriptService scriptService;
 
     private static final String[] DATA_DIRECTORIES =
             dev.lumina.ui.core.LuminaLayout.DATA_DIRECTORIES.toArray(new String[0]);
@@ -68,11 +69,14 @@ public final class LuminaPlugin extends JavaPlugin {
                 this, registry, pageService, pageStore, () -> settings);
         this.bedrockService = new dev.lumina.ui.bedrock.BedrockService(this, registry, settings);
         this.editorMenu = new dev.lumina.ui.editor.EditorMenu(this);
+        this.scriptService = new dev.lumina.ui.script.ScriptService(this);
 
         installDataLayout();
         loadPages();
         registerCommands();
         registerListeners();
+        this.scriptService.start();
+        reportScripts(this.scriptService.reload());
 
         getLogger().info(() -> "LuminaUI " + getPluginMeta().getVersion() + " enabled"
                 + (scheduler.isFolia() ? " (Folia)" : ""));
@@ -80,6 +84,9 @@ public final class LuminaPlugin extends JavaPlugin {
 
     @Override
     public void onDisable() {
+        if (scriptService != null) {
+            scriptService.close();
+        }
         if (editorService != null) {
             editorService.flushAll();
         }
@@ -97,8 +104,19 @@ public final class LuminaPlugin extends JavaPlugin {
         reloadConfig();
         this.settings = Settings.from(getConfig());
         registry.clearPages();
+        installDataLayout();
         loadPages();
         pageService.closeMissingPages();
+        reportScripts(scriptService.reload());
+    }
+
+    /** Logs the result of a script reload, keeping parse errors visible without spamming the console. */
+    public void reportScripts(dev.lumina.ui.script.ScriptService.LoadReport report) {
+        getLogger().info(() -> "Loaded " + report.loaded().size() + " script(s) with "
+                + report.handlers() + " handler(s)");
+        for (String error : report.errors()) {
+            getLogger().warning("Script error: " + error);
+        }
     }
 
     private void loadPages() {
@@ -260,6 +278,10 @@ public final class LuminaPlugin extends JavaPlugin {
 
     public dev.lumina.ui.bedrock.BedrockService bedrockService() {
         return bedrockService;
+    }
+
+    public dev.lumina.ui.script.ScriptService scriptService() {
+        return scriptService;
     }
 
     /** Logs a failure without letting a rendering problem take the plugin down. */

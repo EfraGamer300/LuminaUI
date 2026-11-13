@@ -33,5 +33,8 @@ bedrock:
   built: '<green>Exportadas <white>{count}<green> página(s). Arquivos: <white>{files}'
   export-failed: '<red>A exportação para Bedrock falhou: <white>{error}'
 
+script:
+  reloaded: '<green>Recarregados <white>{count}<green> script(s) com <white>{handlers}<green> handler(s).'
+
 plugin:
   reloaded: '<green>Configuração e páginas recarregadas.'

@@ -14,5 +14,6 @@ public enum UiEventType {
     DRAG_END,
     SCROLL,
     INPUT_TEXT,
+    PAGE_OPEN,
     PAGE_CLOSE
 }

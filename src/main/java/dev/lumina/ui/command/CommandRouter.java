@@ -11,6 +11,7 @@ import dev.lumina.ui.command.subcommands.HelpCommand;
 import dev.lumina.ui.command.subcommands.ListCommand;
 import dev.lumina.ui.command.subcommands.OpenCommand;
 import dev.lumina.ui.command.subcommands.ReloadCommand;
+import dev.lumina.ui.command.subcommands.ScriptCommand;
 import dev.lumina.ui.core.UiRegistry;
 import dev.lumina.ui.session.PageService;
 import dev.lumina.ui.storage.YamlPageStore;
@@ -55,6 +56,7 @@ public final class CommandRouter implements CommandExecutor, TabCompleter {
         register(new ListCommand(registry, messages));
         register(new ReloadCommand(plugin, messages));
         register(new BedrockCommand(plugin, registry, messages));
+        register(new ScriptCommand(plugin, messages));
         register(new DebugCommand(plugin, pageService, messages));
     }
 

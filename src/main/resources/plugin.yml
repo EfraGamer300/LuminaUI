@@ -31,6 +31,7 @@ permissions:
       luminaui.command.list: true
       luminaui.command.reload: true
       luminaui.command.bedrock: true
+      luminaui.command.script: true
       luminaui.command.debug: true
   luminaui.command.use:
     description: Access to the /lumina command
@@ -58,6 +59,9 @@ permissions:
     default: op
   luminaui.command.bedrock:
     description: Export pages to Bedrock with /lumina bedrock
+    default: op
+  luminaui.command.script:
+    description: Inspect and reload scripts with /lumina script
     default: op
   luminaui.command.debug:
     description: Read runtime counters with /lumina debug

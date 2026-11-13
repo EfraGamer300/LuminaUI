@@ -76,6 +76,8 @@ public final class PageService implements Listener, AutoCloseable {
 
         sessions.put(player.getUniqueId(), session);
         startTicker(session);
+        registry.dispatch(new UiEvent(
+                UiEventType.PAGE_OPEN, page.id(), null, player.getUniqueId(), 0f, 0f, 0f, ""));
         return true;
     }
 

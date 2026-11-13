@@ -97,6 +97,29 @@ public final class SchedulerBridge {
         void cancel();
     }
 
+    /** Repeats a task on the global tick loop, used by page timers that are not player-bound. */
+    public ScheduledTaskHandle repeatGlobal(long delayTicks, long periodTicks, Runnable task) {
+        if (folia) {
+            io.papermc.paper.threadedregions.scheduler.ScheduledTask scheduled =
+                    Bukkit.getGlobalRegionScheduler().runAtFixedRate(
+                            plugin, ignored -> task.run(), delayTicks, periodTicks);
+            return () -> scheduled.cancel();
+        }
+        org.bukkit.scheduler.BukkitTask bukkitTask =
+                Bukkit.getScheduler().runTaskTimer(plugin, task, delayTicks, periodTicks);
+        return bukkitTask::cancel;
+    }
+
+    /** Runs a task once, later, on the thread that owns {@code player}. */
+    public void runLaterForPlayer(org.bukkit.entity.Player player, long delayTicks, Runnable task) {
+        if (folia) {
+            player.getScheduler().runDelayed(plugin, ignored -> task.run(), null,
+                    Math.max(1L, delayTicks));
+        } else {
+            Bukkit.getScheduler().runTaskLater(plugin, task, Math.max(1L, delayTicks));
+        }
+    }
+
     /** Runs a task off the tick thread. */
     public void async(Runnable task) {
         if (folia) {
