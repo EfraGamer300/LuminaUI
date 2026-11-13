@@ -1,5 +1,26 @@
 # LuminaUI configuration
 #
+# Data folder layout (created on first run):
+#
+#   plugins/LuminaUI/
+#   ├── config.yml
+#   ├── lang.yml                  editable messages, seeded from the locale below
+#   ├── contents/
+#   │   ├── pages/                page definitions (one .yml per page)
+#   │   ├── components/           reusable node fragments
+#   │   ├── effects/              animation definitions
+#   │   ├── images/               image sources for image nodes
+#   │   ├── scripts/              trigger/action scripts
+#   │   └── world/                world placements
+#   ├── editor-defaults/          templates copied by the editor
+#   ├── resourcepack/             generated pack output
+#   ├── bedrock/
+#   │   ├── generated/            exported Bedrock forms
+#   │   └── pack/                 Bedrock pack files
+#   ├── guis/                     menu layouts
+#   ├── player_data/  userdata/   per-player state
+#   ├── cache/  backups/
+#
 # The runtime draws pages on a virtual grid and projects that grid into the world.
 # Changing the viewport or the projection density changes every page at once, so
 # tune these values once and leave them alone afterwards.

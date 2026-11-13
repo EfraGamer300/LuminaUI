@@ -22,6 +22,35 @@ from, any third-party UI plugin.
 The jar lands in `build/libs/LuminaUI-<version>.jar`. CI runs the same command on JDK 21 and
 publishes the jar as a workflow artifact.
 
+## Data folder layout
+
+Created on first run inside `plugins/LuminaUI/`:
+
+```
+config.yml                 plugin settings
+lang.yml                   editable messages (seeded from the bundled locale)
+contents/
+├── pages/                 page definitions, one .yml per page
+├── components/            reusable node fragments
+├── effects/               animation definitions
+├── images/                image sources for image nodes
+├── scripts/               trigger/action scripts
+└── world/                 world placements
+editor-defaults/
+├── pages/                 page templates offered by the editor
+└── components/            component templates
+resourcepack/              generated pack output
+bedrock/
+├── generated/             exported Bedrock forms
+└── pack/                  Bedrock pack files
+guis/                      menu layouts
+player_data/  userdata/    per-player state
+cache/  backups/
+```
+
+Bundled locales live in the jar under `locales/`; only the selected one is written to `lang.yml`.
+Pages are read from `contents/pages/`.
+
 ## Quick start
 
 ```

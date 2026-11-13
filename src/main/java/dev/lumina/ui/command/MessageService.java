@@ -1,43 +1,58 @@
 package dev.lumina.ui.command;
 
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.plugin.Plugin;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.nio.charset.StandardCharsets;
 
 /**
- * Loads user-facing strings from {@code lang/<locale>.yml} and renders them as MiniMessage.
+ * Loads user-facing strings from {@code lang.yml} in the data folder.
  *
- * <p>Keys are looked up with a fallback chain: the configured locale, then {@code en}, then the
- * bundled default. A missing key therefore produces readable output instead of an empty chat line.
+ * <p>Operators edit a single file, which is what the plugin installs on first run from the bundled
+ * locale selected by the {@code lang} config key. Missing keys fall back to the bundled English
+ * defaults, so an outdated {@code lang.yml} produces readable output instead of raw key names.
  */
 public final class MessageService {
 
     private static final MiniMessage MINI = MiniMessage.miniMessage();
 
     private final Plugin plugin;
-    private final FileConfiguration locale;
+    private final FileConfiguration messages;
     private final FileConfiguration fallback;
     private final String prefix;
 
     public MessageService(Plugin plugin, String localeName) {
         this.plugin = plugin;
-        this.locale = loadLocale(localeName);
-        this.fallback = loadLocale("en");
-        this.prefix = locale.getString("prefix", fallback.getString("prefix", "<gradient:#7dd3fc:#a78bfa>LuminaUI</gradient> "));
+        this.messages = loadLangFile();
+        this.fallback = loadBundled(localeName);
+        this.prefix = messages.getString("prefix",
+                fallback.getString("prefix", "<gradient:#7dd3fc:#a78bfa>LuminaUI</gradient> "));
     }
 
-    private FileConfiguration loadLocale(String name) {
-        java.io.File file = new java.io.File(plugin.getDataFolder(), "lang/" + name + ".yml");
+    private FileConfiguration loadLangFile() {
+        java.io.File file = new java.io.File(plugin.getDataFolder(), "lang.yml");
         if (file.isFile()) {
             return YamlConfiguration.loadConfiguration(file);
         }
-        try (InputStream stream = plugin.getResource("lang/" + name + ".yml")) {
+        return new YamlConfiguration();
+    }
+
+    private FileConfiguration loadBundled(String localeName) {
+        FileConfiguration english = readBundled("en");
+        if ("en".equalsIgnoreCase(localeName)) {
+            return english;
+        }
+        FileConfiguration locale = readBundled(localeName);
+        return locale.getKeys(true).isEmpty() ? english : locale;
+    }
+
+    private FileConfiguration readBundled(String name) {
+        try (InputStream stream = plugin.getResource("locales/" + name + ".yml")) {
             if (stream != null) {
                 return YamlConfiguration.loadConfiguration(
                         new InputStreamReader(stream, StandardCharsets.UTF_8));
@@ -49,7 +64,7 @@ public final class MessageService {
     }
 
     public String raw(String key, String... placeholders) {
-        String template = locale.getString(key);
+        String template = messages.getString(key);
         if (template == null) {
             template = fallback.getString(key, "<red>missing message: " + key);
         }

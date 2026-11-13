@@ -1,5 +1,5 @@
-# Example page. Copy this file to <plugin-folder>/pages/ and rename it to
-# <page-id>.yml, or run /lumina create <id> to start from an empty page.
+# Example page. Copy this file inside <plugin-folder>/contents/pages/, rename it
+# to <page-id>.yml, or run /lumina create <id> to start from an empty page.
 schema-version: 1
 title: 'Example HUD'
 scale: 1.0

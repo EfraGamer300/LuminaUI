@@ -28,7 +28,7 @@ class BundledPageTest {
 
     @Test
     void examplePageParsesAndHasExpectedStructure() throws IOException {
-        String text = readResource("pages/example.yml");
+        String text = readResource("contents/pages/example.yml");
         Map<String, Object> root = new SimpleYaml().read(text);
 
         UiPage page = new PageCodec().decode("example", root);
@@ -44,7 +44,7 @@ class BundledPageTest {
 
     @Test
     void examplePageSurvivesSaveAndReloadCycle() throws IOException {
-        Map<String, Object> root = new SimpleYaml().read(readResource("pages/example.yml"));
+        Map<String, Object> root = new SimpleYaml().read(readResource("contents/pages/example.yml"));
         UiPage original = new PageCodec().decode("example", root);
 
         SimpleYaml yaml = new SimpleYaml();

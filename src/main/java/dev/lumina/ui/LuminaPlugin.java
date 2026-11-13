@@ -37,6 +37,9 @@ public final class LuminaPlugin extends JavaPlugin {
     private dev.lumina.ui.editor.EditorMenu editorMenu;
     private dev.lumina.ui.bedrock.BedrockService bedrockService;
 
+    private static final String[] DATA_DIRECTORIES =
+            dev.lumina.ui.core.LuminaLayout.DATA_DIRECTORIES.toArray(new String[0]);
+
     public static LuminaPlugin instance() {
         return instance;
     }
@@ -66,7 +69,7 @@ public final class LuminaPlugin extends JavaPlugin {
         this.bedrockService = new dev.lumina.ui.bedrock.BedrockService(this, registry, settings);
         this.editorMenu = new dev.lumina.ui.editor.EditorMenu(this);
 
-        installDefaultPages();
+        installDataLayout();
         loadPages();
         registerCommands();
         registerListeners();
@@ -106,15 +109,59 @@ public final class LuminaPlugin extends JavaPlugin {
         getLogger().info(() -> "Loaded " + pages.size() + " page(s)");
     }
 
-    /** Copies the bundled example page into the data folder on first run. */
-    private void installDefaultPages() {
-        if (java.nio.file.Files.isRegularFile(pagesDirectory().resolve("example.yml"))) {
+    /**
+     * Creates the data folder layout on first run and installs the bundled defaults.
+     *
+     * <p>The layout mirrors the one operators already know: pages, components, effects, images,
+     * scripts and world placements live under {@code contents/}, editor templates under
+     * {@code editor-defaults/}, and pack output under {@code resourcepack/} and {@code bedrock/}.
+     * Directories are created even when a feature is not used yet, so an operator can drop files in
+     * place before the corresponding command exists.
+     */
+    private void installDataLayout() {
+        for (String directory : DATA_DIRECTORIES) {
+            try {
+                java.nio.file.Files.createDirectories(getDataFolder().toPath().resolve(directory));
+            } catch (java.io.IOException failure) {
+                reportFailure("creating data directory " + directory, failure);
+            }
+        }
+        installIfMissing(dev.lumina.ui.core.LuminaLayout.PAGES + "/example.yml");
+        installLangFile();
+    }
+
+    private void installIfMissing(String resourcePath) {
+        if (java.nio.file.Files.isRegularFile(getDataFolder().toPath().resolve(resourcePath))) {
             return;
         }
         try {
-            saveResource("pages/example.yml", false);
+            saveResource(resourcePath, false);
         } catch (RuntimeException failure) {
-            reportFailure("installing the example page", failure);
+            reportFailure("installing " + resourcePath, failure);
+        }
+    }
+
+    /**
+     * Writes {@code lang.yml} from the bundled locale selected by the {@code lang} config key.
+     * A single language file is what operators edit; the bundled locales stay internal.
+     */
+    private void installLangFile() {
+        java.nio.file.Path target = getDataFolder().toPath().resolve(dev.lumina.ui.core.LuminaLayout.LANG_FILE);
+        if (java.nio.file.Files.isRegularFile(target)) {
+            return;
+        }
+        String locale = getConfig().getString("lang", "en");
+        String resource = "locales/" + locale + ".yml";
+        if (getResource(resource) == null) {
+            resource = "locales/en.yml";
+        }
+        try (java.io.InputStream stream = getResource(resource)) {
+            if (stream == null) {
+                return;
+            }
+            java.nio.file.Files.write(target, stream.readAllBytes());
+        } catch (java.io.IOException failure) {
+            reportFailure("installing lang.yml", failure);
         }
     }
 
@@ -135,7 +182,40 @@ public final class LuminaPlugin extends JavaPlugin {
     }
 
     public Path pagesDirectory() {
-        return getDataFolder().toPath().resolve("pages");
+        return getDataFolder().toPath().resolve(dev.lumina.ui.core.LuminaLayout.PAGES);
+    }
+
+    public Path componentsDirectory() {
+        return getDataFolder().toPath().resolve(dev.lumina.ui.core.LuminaLayout.COMPONENTS);
+    }
+
+    public Path effectsDirectory() {
+        return getDataFolder().toPath().resolve(dev.lumina.ui.core.LuminaLayout.EFFECTS);
+    }
+
+    public Path imagesDirectory() {
+        return getDataFolder().toPath().resolve(dev.lumina.ui.core.LuminaLayout.IMAGES);
+    }
+
+    public Path scriptsDirectory() {
+        return getDataFolder().toPath().resolve(dev.lumina.ui.core.LuminaLayout.SCRIPTS);
+    }
+
+    public Path worldDirectory() {
+        return getDataFolder().toPath().resolve(dev.lumina.ui.core.LuminaLayout.WORLD);
+    }
+
+    public Path editorDefaultsDirectory() {
+        return getDataFolder().toPath().resolve(dev.lumina.ui.core.LuminaLayout.EDITOR_DEFAULTS);
+    }
+
+    public Path resourcePackDirectory() {
+        return getDataFolder().toPath().resolve(dev.lumina.ui.core.LuminaLayout.RESOURCE_PACK);
+    }
+
+    /** {@code lang.yml} in the data folder, or {@code null} when it was removed. */
+    public Path langFile() {
+        return getDataFolder().toPath().resolve(dev.lumina.ui.core.LuminaLayout.LANG_FILE);
     }
 
     public Settings settings() {

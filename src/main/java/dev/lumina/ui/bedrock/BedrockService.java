@@ -43,13 +43,27 @@ public final class BedrockService {
     public List<Path> exportAll() throws IOException {
         GeyserPackBridge bridge = bridge();
         List<Path> written = new ArrayList<>();
+        Path localOutput = plugin.getDataFolder().toPath()
+                .resolve(dev.lumina.ui.core.LuminaLayout.BEDROCK_GENERATED);
         for (String pageId : registry.pageIds()) {
             BedrockExporter.ExportResult result = export(pageId);
+            written.add(writeLocal(localOutput, pageId, result.customForm()));
             if (bridge.isConfigured()) {
                 written.add(bridge.writeForm(pageId, result.customForm()));
             }
         }
         return written;
+    }
+
+    /**
+     * Always keeps a copy of the generated form inside the plugin folder, so operators can inspect
+     * or hand-deploy the output even when no Geyser packs folder is configured.
+     */
+    private Path writeLocal(Path directory, String pageId, String json) throws IOException {
+        java.nio.file.Files.createDirectories(directory);
+        Path target = directory.resolve(pageId + ".json");
+        java.nio.file.Files.writeString(target, json);
+        return target;
     }
 
     public GeyserPackBridge bridge() {
